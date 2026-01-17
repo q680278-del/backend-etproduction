@@ -4,6 +4,9 @@ import { XMLParser } from 'fast-xml-parser';
 const YOUTUBE_CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID || 'UCjzXFaKyIpKwO7CmH9YqXeQ';
 
 export default async function handler(req, res) {
+    console.log('YouTube Endpoint Hit');
+    console.log('API Key Present:', !!process.env.YOUTUBE_API_KEY);
+
     try {
         const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${YOUTUBE_CHANNEL_ID}`;
 
