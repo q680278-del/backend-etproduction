@@ -4,8 +4,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import hpp from 'hpp';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
 
 // Import routes
 import youtubeRoutes from './routes/youtube.js';
@@ -16,25 +14,12 @@ import notificationRoutes from './routes/notifications.js';
 // Import middleware
 import { trackingMiddleware } from './middleware/trackingMiddleware.js';
 
-// Import utilities
-import systemMonitor from './utils/systemMonitor.js';
-import errorTracker from './utils/errorTracker.js';
-
-// Create Express app and HTTP server
+// Create Express app
 const app = express();
-const httpServer = createServer(app);
 const PORT = process.env.PORT || 4000;
 
-// Setup Socket.io
-const io = new Server(httpServer, {
-  cors: {
-    origin: function (origin) {
-      if (!origin) return true;
-      return origin.match(/^http:\/\/localhost:\d+$/) || origin === process.env.FRONTEND_URL;
-    },
-    credentials: true
-  }
-});
+// IMPORTANT: For Vercel deployment, individual API endpoints in /api folder are used
+// This server.js is only for local development
 
 // Middleware
 app.use(helmet({
@@ -139,41 +124,12 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Socket.io connection handling
-io.on('connection', (socket) => {
-  console.log('✅ Client connected:', socket.id);
-
-  // Send initial data
-  socket.emit('connected', {
-    message: 'Connected to E & T PRODUCTION server',
-    timestamp: new Date().toISOString()
-  });
-
-  socket.on('disconnect', () => {
-    console.log('❌ Client disconnected:', socket.id);
-  });
-});
-
-// Broadcast system health every 1 second (Realtime)
-setInterval(async () => {
-  const quickStats = await systemMonitor.getQuickStats();
-  io.emit('system:health', quickStats);
-}, 1000);
-
-// Broadcast error stats every 30 seconds
-setInterval(() => {
-  const errorStats = errorTracker.getStats();
-  io.emit('system:errors', errorStats);
-}, 30000);
-
-// Make io available globally for visitor tracking
-app.set('io', io);
-
-// Start server
-httpServer.listen(PORT, () => {
+// Start Express server (no Socket.IO for Vercel)
+app.listen(PORT, () => {
   console.log(`🚀 E & T PRODUCTION Backend server is running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔌 Socket.io server ready for real-time updates`);
+  console.log(`⚠️  NOTE: Socket.IO removed for Vercel serverless compatibility`);
+  console.log(`📡 Frontend should use polling instead of WebSocket`);
 });
 
 export default app;
