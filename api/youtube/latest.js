@@ -61,24 +61,22 @@ export default async function handler(req, res) {
                             if (statsMap[item.id]) {
                                 item.views = Number(statsMap[item.id].views);
                                 item.likes = Number(statsMap[item.id].likes);
-                            });
+                            }
+                        });
                     }
                 } else {
                     const errText = await statsRes.text();
                     console.error('Stats API Failed:', errText);
                 }
-            });
-        }
-    }
             } catch (statsErr) {
-    console.error('Failed to fetch YouTube stats:', statsErr);
-    // Continue without stats if this fails
-}
+                console.error('Failed to fetch YouTube stats:', statsErr);
+            }
         }
 
-res.json({ items });
+        res.json({ items });
     } catch (error) {
-    console.error('YouTube fetch error:', error);
-    res.status(500).json({ items: [], error: 'Failed to fetch videos' });
+        console.error('YouTube fetch error:', error);
+        res.status(500).json({ items: [], error: 'Failed to fetch videos' });
+    }
 }
 }
